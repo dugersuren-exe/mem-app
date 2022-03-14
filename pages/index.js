@@ -2,7 +2,27 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
+import { useEffect, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { pupilJsonDatas } from "../redux/pupil/actionCreator";
+import { getAllWords } from "../redux/words/actionCreator";
+import actions from "../redux/pupil/actions";
+
+
+
 export default function Home() {
+
+  const dispatch = useDispatch();
+  const pupils = useSelector((state) => state.pupil);
+  
+   
+  
+    useEffect(() => {
+      dispatch(pupilJsonDatas());
+      dispatch(getAllWords());
+    }, []);
+
+
   return (
     <div className={styles.container}>
       <Head>
