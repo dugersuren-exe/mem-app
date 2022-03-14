@@ -34,60 +34,11 @@ npm i antd @ant-design/icons
 ---
 
 <details>
-<summary> 3. models фолдер дотор schema-ийг үүсгэх </summary>
+<summary> Бусад тохиргоонууд </summary>
 
-Үндсэн фолдер дотор доорх зам дээр файлуудыг үүсгэх
-```
-models/words.js
-```
-
-**Жишээ нь:**
-```
-import mongoose from 'mongoose';
-
-const WordsSchema = new mongoose.Schema({
-  category_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-  },
-  eng: {
-    type: String,
-    required: true
-  },
-  mon: {
-    type: String,
-    required: true
-  },
-  comm: {
-    type: String,
-    required: true
-  },
+.........................
 
 
-});
-
-export default mongoose.models.Words || mongoose.model('Words', WordsSchema);
-
-```
-
-models/category.js
-
-```
-import mongoose from 'mongoose';
-
-const CategorySchema = new mongoose.Schema({
-
-  name: {
-    type: String,
-    required: true
-  }
-});
-
-export default mongoose.models.Category || mongoose.model('Category', WCategorySchema);
-
-
-
-```
 </details>
 
 
@@ -311,6 +262,282 @@ async function deletePost(req, res) {
 ---
 
 <details>
+<summary> API -ийг тестлэх </summary>
+
+Тухайн сайт нь өгөглийн баазтай зөв холбосон бол дараах холбоосууд ажиллах ёстой
+
+**Жишээ нь:**
+
+GET method -оор дараах холбоос:    
+```
+http://localost:3000/api/words
+```
+
+POST method -оор дараах холбоос:    
+```
+http://localost:3000/api/words
+```
+
+PUT method -оор дараах холбоос:    
+```
+http://localost:3000/api/words
+```
+
+DELETE method -оор дараах холбоос:    
+```
+http://localost:3000/api/words
+```
+</details>
+
+---
+
+
+<details>
+<summary> Redux-ийг холбох </summary>
+
+Үндсэн фолдер дотор redux фолдер бүхий агуулгуудыг үүсгэж холбох
+
+**Жишээ нь:**
+redux -фолдерийг хуулаад тэндээ тохиргоо хийж болно.
+
+**_app.js файл дотор дараах агуулга орсон байх**
+```
+import { Provider } from "react-redux";
+import { createWrapper } from "next-redux-wrapper";
+import store from "../redux/store";
+
+import 'antd/dist/antd.css';
+
+function MyApp({ Component, pageProps }) {
+  return (
+    <Provider store={store}>
+      <Component {...pageProps} />
+    </Provider>
+  );
+} 
+
+const makeStore = () => store;
+const wrapper = createWrapper(makeStore);
+
+ 
+
+export default wrapper.withRedux(MyApp);
+```
+
+</details>
+
+---
+<details>
+<summary> redux фолдер дотор words-ийг холбож оруулж ирэх </summary>
+
+redux фолдер дотор words фолдерийг үүсгэж дотор нь дараах 3 файлыг үүсгэнэ.
+* actions.js
+* actionCreator.js
+* reducers.js
+
+
+ 
+**Жишээ нь:**
+
+actions.js файлын агуулга
+```
+const actions = {
+  WORDS_LOADING: 'WORDS_LOADING',
+  WORDS_SUCCESS: 'WORDS_SUCCESS',
+  WORDS_ERROR: 'WORDS_ERROR',
+
+  wordsLoading: () => {
+    return {
+      type: actions.WORDS_LOADING,
+    };
+  },
+
+  wordsSuccess: data => {
+    return {
+      type: actions.WORDS_SUCCESS,
+      data,
+    };
+  },
+
+  wordsError: err => {
+    return {
+      type: actions.WORDS_ERROR,
+      err,
+    };
+  },
+  
+
+};
+
+export default actions;
+
+```
+
+actionCreator.js
+```
+import actions from './actions';
+import axios from 'axios'
+
+const { wordsLoading, wordsSuccess, wordsError } = actions;
+
+
+const getAllWords = () => {
+  
+  return async dispatch => {
+    try {
+      dispatch(wordsLoading());
+      await axios.get("http://localhost:3000/api/words").then(({data}) => {          
+        dispatch(wordsSuccess(data.list))
+      });
+    } catch (err) {
+      dispatch(wordsError(err));
+    }
+
+  };
+};
+
+
+
+export {getAllWords };
+
+
+```
+
+
+reducers.js
+```
+import actions from './actions';
+
+const { WORDS_LOADING, WORDS_SUCCESS, WORDS_ERROR} = actions;
+
+const initialState = {
+  list: [],
+  loading: false,
+  error: null
+};
+
+const WordsReducer = (state = initialState, action) => {
+    
+  const { type, data, err } = action;
+  //console.log('==========>',data)   
+  switch (type) {
+    case WORDS_LOADING:
+      return {
+        ...state,
+        loading: true,
+        error: null,
+        
+      };
+    case WORDS_SUCCESS:   
+      return {
+        ...state,
+        list: data,
+        loading: false,
+      };     
+    case WORDS_ERROR:
+      return {
+        ...state,
+        error: err,
+        loading: false
+
+      };
+    
+    default:
+      return state;
+  }
+};
+export default WordsReducer;
+
+
+
+
+```
+
+</details>
+
+---
+<details>
+<summary> pages/words.js файлыг үүсгэх </summary>
+
+Энэ нь уг веб сайтын words хуудас дуудагдахад ажиллах үүрэгтэй
+
+**Жишээ нь:**
+```
+import { Table, Tag, Space,Button } from 'antd';
+
+import { useEffect, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { pupilJsonDatas } from "../redux/pupil/actionCreator";
+import { getAllWords } from "../redux/words/actionCreator";
+import actions from "../redux/pupil/actions";
+
+
+//Layouts
+import MainLayout from '../components/layouts/MainLayout'
+
+
+const columns = [
+    {
+      title: 'English',
+      dataIndex: 'eng',
+      key: 'eng'
+    },
+    {
+      title: 'Монгол',
+      dataIndex: 'mon',
+      key: 'mon',
+    },
+    {
+      title: 'Comment',
+      dataIndex: 'comm',
+      key: 'comm',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (text, record) => (
+        <Space size="middle">
+          <a>Edit {record.name}</a>
+          <a>Delete</a>
+        </Space>
+      ),
+    },
+  ];
+
+
+
+function words() {
+  const dispatch = useDispatch();
+  const data = useSelector((state) => state.words.list);
+  
+   
+  
+    useEffect(() => {
+      dispatch(getAllWords());
+    }, []);
+
+
+
+
+  return (
+    <MainLayout>
+    <Space>
+    <Button>Үг нэмэх</Button>
+    </Space>
+    <Table columns={columns} dataSource={data} />
+    
+    </MainLayout>
+  )
+}
+
+export default words
+
+
+```
+</details>
+
+---
+<details>
 <summary> ????? </summary>
 
 ????
@@ -322,7 +549,89 @@ async function deletePost(req, res) {
 </details>
 
 ---
+<details>
+<summary> ????? </summary>
 
+????
 
+**Жишээ нь:**
+```
+???
+```
+</details>
+
+---
+<details>
+<summary> ????? </summary>
+
+????
+
+**Жишээ нь:**
+```
+???
+```
+</details>
+
+---
+<details>
+<summary> ????? </summary>
+
+????
+
+**Жишээ нь:**
+```
+???
+```
+</details>
+
+---
+<details>
+<summary> ????? </summary>
+
+????
+
+**Жишээ нь:**
+```
+???
+```
+</details>
+
+---
+<details>
+<summary> ????? </summary>
+
+????
+
+**Жишээ нь:**
+```
+???
+```
+</details>
+
+---
+<details>
+<summary> ????? </summary>
+
+????
+
+**Жишээ нь:**
+```
+???
+```
+</details>
+
+---
+<details>
+<summary> ????? </summary>
+
+????
+
+**Жишээ нь:**
+```
+???
+```
+</details>
+
+---
 
 
