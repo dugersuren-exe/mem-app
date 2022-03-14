@@ -270,22 +270,22 @@ async function deletePost(req, res) {
 
 GET method -оор дараах холбоос:    
 ```
-http://localost:3000/api/words
+http://localhost:3000/api/words
 ```
 
 POST method -оор дараах холбоос:    
 ```
-http://localost:3000/api/words
+http://localhost:3000/api/words
 ```
 
 PUT method -оор дараах холбоос:    
 ```
-http://localost:3000/api/words
+http://localhost:3000/api/words
 ```
 
 DELETE method -оор дараах холбоос:    
 ```
-http://localost:3000/api/words
+http://localhost:3000/api/words
 ```
 </details>
 

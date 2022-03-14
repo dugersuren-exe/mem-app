@@ -1,6 +1,4 @@
-//import axios from '../../utils/axios';
 import actions from './actions';
-import initialState from '../../data/pupil.json';
 import axios from 'axios'
 
 const { wordsLoading, wordsSuccess, wordsError } = actions;
@@ -23,16 +21,5 @@ const getAllWords = () => {
 
 
 
-const pupilJsonDatas = () => {
-  return async dispatch => {
-    try {
-      dispatch(pupilBegin());
-      dispatch(pupilSuccess(initialState));
-    } catch (err) {
-      dispatch(pupilError(err));
-    }
-  };
-};
-
-export {getAllWords, pupilJsonDatas };
+export {getAllWords };
 
